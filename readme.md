@@ -2,6 +2,19 @@
 ## Install
 To install, copy or symlink this directory to `~/.local/share/albert/org.albert.extension.python/modules/google_translate_steven/`.
 
+## Config
+Config is stored in `~/.config/albert/albert.google_translate_steven/settings.json`.
+
+Synonyms can be added for languages in `google_trans_new.constant`.
+
+Example config:
+
+```json
+{
+  "cn": "zh-cn"
+}
+```
+
 ## Development Setup
 To setup the project for development, run:
 

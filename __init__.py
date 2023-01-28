@@ -1,10 +1,18 @@
+import json
 import sys
 import time
 from locale import getdefaultlocale
 from pathlib import Path
 
-from albert import setClipboardText  # noqa: E402, pylint: disable=import-error
-from albert import Action, Item, Query, QueryHandler  # noqa: E402, pylint: disable=import-error
+from albert import (  # noqa: E402, pylint: disable=import-error
+    Action,
+    Item,
+    Query,
+    QueryHandler,
+    configLocation,
+    setClipboardText,
+    warning,
+)
 
 
 sys.path.append(str(Path(__file__).parent))  # isort: skip
@@ -28,6 +36,7 @@ ICON_PATH = str(Path(__file__).parent / 'icons/google_translate.png')
 class Plugin(QueryHandler):
     translator: google_translator | None = None
     language: str | None = None
+    synonyms: dict[str, str] = {}
 
     def id(self) -> str:
         return __name__
@@ -45,8 +54,19 @@ class Plugin(QueryHandler):
         return '[[src] dest] text'
 
     def initialize(self) -> None:
+        self.synonyms = LANGUAGES
+        with (Path(configLocation()) / __name__ / 'settings.json').open() as sr:
+            self.synonyms = json.load(sr)
+            for dest in self.synonyms.values():
+                if dest not in LANGUAGES:
+                    warning(f'Invalid language: {dest}')
+                    continue
+
         self.translator = google_translator()
         self.language = getdefaultlocale()[0][0:2]
+
+    def get_lang_with_synonym(self, lang: str) -> str:
+        return self.synonyms.get(lang, lang)
 
     def handleQuery(self, query: Query) -> None:
         query_str = query.string.strip()
@@ -62,12 +82,12 @@ class Plugin(QueryHandler):
         lang_src = None
         lang_tgt, text = self.language, query_str
         splits = text.split(maxsplit=1)
-        if 1 < len(splits) and splits[0] in LANGUAGES:
-            lang_tgt, text = splits[0], splits[1]
+        if len(splits) > 1 and self.get_lang_with_synonym(splits[0]) in LANGUAGES:
+            lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
             splits = text.split(maxsplit=1)
-            if 1 < len(splits) and splits[0] in LANGUAGES:
+            if len(splits) > 1 and self.get_lang_with_synonym(splits[0]) in LANGUAGES:
                 lang_src = lang_tgt
-                lang_tgt, text = splits[0], splits[1]
+                lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
 
         if lang_src:
             translate_text = self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)
