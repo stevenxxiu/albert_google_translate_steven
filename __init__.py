@@ -29,7 +29,6 @@ md_description = 'Translate sentences using Google Translate'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
 md_maintainers = '@stevenxxiu'
 
-TRIGGER = 'tr'
 ICON_PATH = str(Path(__file__).parent / 'icons/google_translate.png')
 
 
@@ -48,7 +47,7 @@ class Plugin(QueryHandler):
         return md_description
 
     def defaultTrigger(self) -> str:
-        return f'{TRIGGER} '
+        return 'tr '
 
     def synopsis(self) -> str:
         return '[[src] dest] text'
