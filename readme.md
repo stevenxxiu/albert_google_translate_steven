@@ -1,4 +1,6 @@
 # Albert Launcher Google Translate Extension
+Translate sentences using *Google Translate*.
+
 ## Install
 To install, copy or symlink this directory to `~/.local/share/albert/org.albert.extension.python/modules/google_translate_steven/`.
 
