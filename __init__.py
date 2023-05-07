@@ -1,7 +1,7 @@
 import json
 import sys
 import time
-from locale import getdefaultlocale
+from locale import getlocale
 from pathlib import Path
 
 from albert import (  # noqa: E402, pylint: disable=import-error
@@ -62,7 +62,7 @@ class Plugin(QueryHandler):
                     continue
 
         self.translator = google_translator()
-        self.language = getdefaultlocale()[0][0:2]
+        self.language = getlocale()[0][0:2]
 
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
