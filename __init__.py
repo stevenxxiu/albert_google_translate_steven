@@ -88,24 +88,30 @@ class Plugin(TriggerQueryHandler):
                 lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
 
         if lang_src:
-            translate_text = self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)
+            translate_texts = self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)
         else:
-            translate_text = self.translator.translate(text, lang_tgt=lang_tgt)
+            translate_texts = self.translator.translate(text, lang_tgt=lang_tgt)
 
-        query.add(
-            Item(
-                id=f'{md_name}/copy',
-                text=translate_text,
-                subtext=(
-                    f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
-                ),
-                icon=[ICON_PATH],
-                actions=[
-                    Action(
-                        f'{md_name}/copy',
-                        'Copy result to clipboard',
-                        lambda translate_text_=translate_text: setClipboardText(translate_text_),
-                    )
-                ],
+        if isinstance(translate_texts, str):
+            translate_texts = [translate_texts]
+
+        for translate_text in translate_texts:
+            query.add(
+                Item(
+                    id=f'{md_name}/copy',
+                    text=translate_text,
+                    subtext=(
+                        f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}'
+                        if lang_src
+                        else f'To {LANGUAGES[lang_tgt]}'
+                    ),
+                    icon=[ICON_PATH],
+                    actions=[
+                        Action(
+                            f'{md_name}/copy',
+                            'Copy result to clipboard',
+                            lambda translate_text_=translate_text: setClipboardText(translate_text_),
+                        )
+                    ],
+                )
             )
-        )
