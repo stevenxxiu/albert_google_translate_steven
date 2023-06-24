@@ -7,9 +7,8 @@ from pathlib import Path
 from albert import (  # noqa: E402, pylint: disable=import-error
     Action,
     Item,
-    Query,
-    QueryHandler,
-    configLocation,
+    TriggerQuery,
+    TriggerQueryHandler,
     setClipboardText,
     warning,
 )
@@ -22,8 +21,8 @@ from google_trans_new.constant import LANGUAGES  # noqa: E402
 from google_trans_new.google_trans_new import google_translator  # noqa: E402
 
 
-md_iid = '0.5'
-md_version = '1.0'
+md_iid = '1.0'
+md_version = '1.1'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
@@ -32,7 +31,7 @@ md_maintainers = '@stevenxxiu'
 ICON_PATH = str(Path(__file__).parent / 'icons/google_translate.png')
 
 
-class Plugin(QueryHandler):
+class Plugin(TriggerQueryHandler):
     translator: google_translator | None = None
     language: str | None = None
     synonyms: dict[str, str] = {}
@@ -54,7 +53,7 @@ class Plugin(QueryHandler):
 
     def initialize(self) -> None:
         self.synonyms = LANGUAGES
-        with (Path(configLocation()) / __name__ / 'settings.json').open() as sr:
+        with (Path(self.configLocation()) / 'settings.json').open() as sr:
             self.synonyms = json.load(sr)
             for dest in self.synonyms.values():
                 if dest not in LANGUAGES:
@@ -67,7 +66,7 @@ class Plugin(QueryHandler):
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
 
-    def handleQuery(self, query: Query) -> None:
+    def handleTriggerQuery(self, query: TriggerQuery) -> None:
         query_str = query.string.strip()
         if not query_str:
             return
