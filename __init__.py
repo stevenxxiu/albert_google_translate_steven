@@ -6,11 +6,11 @@ from pathlib import Path
 
 from albert import (  # noqa: E402, pylint: disable=import-error
     Action,
-    Item,
+    PluginInstance,
+    StandardItem,
     TriggerQuery,
     TriggerQueryHandler,
     setClipboardText,
-    warning,
 )
 
 
@@ -21,39 +21,37 @@ from google_trans_new.constant import LANGUAGES  # noqa: E402
 from google_trans_new.google_trans_new import google_translator  # noqa: E402
 
 
-md_iid = '1.0'
-md_version = '1.1'
+warning = globals().get('warning', lambda _: None)
+
+md_iid = '2.0'
+md_version = '1.2'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
 md_maintainers = '@stevenxxiu'
 
-ICON_PATH = str(Path(__file__).parent / 'icons/google_translate.png')
+ICON_URL = f'file:{Path(__file__).parent / "icons/google_translate.png"}'
 
 
-class Plugin(TriggerQueryHandler):
+class Plugin(PluginInstance, TriggerQueryHandler):
     translator: google_translator | None = None
     language: str | None = None
     synonyms: dict[str, str] = {}
 
-    def id(self) -> str:
-        return __name__
-
-    def name(self) -> str:
-        return md_name
-
-    def description(self) -> str:
-        return md_description
-
-    def defaultTrigger(self) -> str:
-        return 'tr '
-
-    def synopsis(self) -> str:
-        return '[[src] dest] text'
+    def __init__(self):
+        TriggerQueryHandler.__init__(
+            self,
+            id=__name__,
+            name=md_name,
+            description=md_description,
+            synopsis='[[src] dest] text',
+            defaultTrigger='tr ',
+        )
+        PluginInstance.__init__(self, extensions=[self])
 
     def initialize(self) -> None:
         self.synonyms = LANGUAGES
-        with (Path(self.configLocation()) / 'settings.json').open() as sr:
+        with (Path(self.configLocation) / 'settings.json').open() as sr:
             self.synonyms = json.load(sr)
             for dest in self.synonyms.values():
                 if dest not in LANGUAGES:
@@ -97,7 +95,7 @@ class Plugin(TriggerQueryHandler):
 
         for translate_text in translate_texts:
             query.add(
-                Item(
+                StandardItem(
                     id=f'{md_name}/copy',
                     text=translate_text,
                     subtext=(
@@ -105,7 +103,7 @@ class Plugin(TriggerQueryHandler):
                         if lang_src
                         else f'To {LANGUAGES[lang_tgt]}'
                     ),
-                    icon=[ICON_PATH],
+                    iconUrls=[ICON_URL],
                     actions=[
                         Action(
                             f'{md_name}/copy',
