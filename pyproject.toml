@@ -41,6 +41,7 @@ disable = [
     'too-many-ancestors',
   ]
 max-line-length = 120
+init-hook = 'import sys; sys.path.append(".")'
 
 [tool.pyright]
 reportMissingModuleSource = false

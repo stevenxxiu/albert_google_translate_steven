@@ -8,7 +8,6 @@ from albert import (  # noqa: E402, pylint: disable=import-error
     Action,
     PluginInstance,
     StandardItem,
-    TriggerQuery,
     TriggerQueryHandler,
     setClipboardText,
 )
@@ -23,8 +22,8 @@ from google_trans_new.google_trans_new import google_translator  # noqa: E402
 
 warning = globals().get('warning', lambda _: None)
 
-md_iid = '2.0'
-md_version = '1.2'
+md_iid = '2.3'
+md_version = '1.3'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
@@ -47,9 +46,8 @@ class Plugin(PluginInstance, TriggerQueryHandler):
             synopsis='[[src] dest] text',
             defaultTrigger='tr ',
         )
-        PluginInstance.__init__(self, extensions=[self])
+        PluginInstance.__init__(self)
 
-    def initialize(self) -> None:
         self.synonyms = LANGUAGES
         with (Path(self.configLocation) / 'settings.json').open() as sr:
             self.synonyms = json.load(sr)
@@ -64,7 +62,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
 
-    def handleTriggerQuery(self, query: TriggerQuery) -> None:
+    def handleTriggerQuery(self, query) -> None:
         query_str = query.string.strip()
         if not query_str:
             return
