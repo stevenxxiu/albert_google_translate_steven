@@ -57,7 +57,9 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                     continue
 
         self.translator = google_translator()
-        self.language = getlocale()[0][0:2]
+        language_code = getlocale()[0]
+        assert language_code is not None
+        self.language = language_code[0:2]
 
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
@@ -75,6 +77,8 @@ class Plugin(PluginInstance, TriggerQueryHandler):
 
         lang_src = None
         lang_tgt, text = self.language, query_str
+        assert lang_tgt is not None
+
         splits = text.split(maxsplit=1)
         if len(splits) > 1 and self.get_lang_with_synonym(splits[0]) in LANGUAGES:
             lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
@@ -83,6 +87,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                 lang_src = lang_tgt
                 lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
 
+        assert self.translator is not None
         if lang_src:
             translate_texts = self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)
         else:
