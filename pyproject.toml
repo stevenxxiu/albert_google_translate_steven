@@ -1,36 +1,11 @@
 [project]
-name = ''
-version = ''
-description = ''
-authors = [
-    {name = 'Steven Xu', email = 'stevenxxiu@gmail.com'},
-]
-dependencies = []
-requires-python = '>=3.11'
-license = {text = 'MIT'}
+requires-python = '>=3.12'
 
-[tool.black]
-target-version = ['py311']
+[tool.ruff]
 line-length = 120
-skip-string-normalization = true
-quiet = true
-exclude = '''
-/(
-    \.git
-)/
-'''
 
-[tool.isort]
-profile = 'black'
-line_length = 120
-sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
-multi_line_output = 3
-use_parentheses = true
-atomic = true
-lines_after_imports = 2
-combine_star = true
-include_trailing_comma = true
-force_grid_wrap = 0
+[tool.ruff.format]
+quote-style = 'single'
 
 [tool.pylint]
 disable = [
@@ -41,7 +16,6 @@ disable = [
     'too-many-ancestors',
   ]
 max-line-length = 120
-init-hook = 'import sys; sys.path.append(".")'
 
 [tool.pyright]
 reportMissingModuleSource = false
