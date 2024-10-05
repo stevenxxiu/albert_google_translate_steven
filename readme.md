@@ -2,7 +2,7 @@
 Translate sentences using *Google Translate*.
 
 ## Install
-To install, copy or symlink this directory to `~/.local/share/albert/org.albert.extension.python/modules/google_translate_steven/`.
+To install, copy or symlink this directory to `~/.local/share/albert/python/plugins/google_translate_steven/`.
 
 ## Config
 Config is stored in `~/.config/albert/albert.google_translate_steven/settings.json`.
