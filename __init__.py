@@ -4,7 +4,7 @@ import time
 from locale import getlocale
 from pathlib import Path
 
-from albert import (  # noqa: E402, pylint: disable=import-error
+from albert import (
     Action,
     PluginInstance,
     StandardItem,
@@ -12,22 +12,21 @@ from albert import (  # noqa: E402, pylint: disable=import-error
     setClipboardText,
 )
 
-
 sys.path.append(str(Path(__file__).parent))  # isort: skip
 
 # pylint: disable=wrong-import-position
-from google_trans_new.constant import LANGUAGES  # noqa: E402
-from google_trans_new.google_trans_new import google_translator  # noqa: E402
-
+from google_trans_new.constant import LANGUAGES
+from google_trans_new.google_trans_new import google_translator
 
 warning = globals().get('warning', lambda _: None)
 
-md_iid = '2.3'
-md_version = '1.3'
+md_iid = '3.0'
+md_version = '1.4'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
+md_license = 'MIT'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
-md_maintainers = '@stevenxxiu'
+md_authors = ['@stevenxxiu']
 
 ICON_URL = f'file:{Path(__file__).parent / "icons/google_translate.png"}'
 
@@ -38,18 +37,11 @@ class Plugin(PluginInstance, TriggerQueryHandler):
     synonyms: dict[str, str] = {}
 
     def __init__(self):
-        TriggerQueryHandler.__init__(
-            self,
-            id=__name__,
-            name=md_name,
-            description=md_description,
-            synopsis='[[src] dest] text',
-            defaultTrigger='tr ',
-        )
         PluginInstance.__init__(self)
+        TriggerQueryHandler.__init__(self)
 
         self.synonyms = LANGUAGES
-        with (Path(self.configLocation) / 'settings.json').open() as sr:
+        with (Path(self.configLocation()) / 'settings.json').open() as sr:
             self.synonyms = json.load(sr)
             for dest in self.synonyms.values():
                 if dest not in LANGUAGES:
@@ -60,6 +52,12 @@ class Plugin(PluginInstance, TriggerQueryHandler):
         language_code = getlocale()[0]
         assert language_code is not None
         self.language = language_code[0:2]
+
+    def synopsis(self, _query: str) -> str:
+        return '[[src] dest] text'
+
+    def defaultTrigger(self):
+        return 'tr '
 
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
