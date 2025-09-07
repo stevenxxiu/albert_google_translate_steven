@@ -3,22 +3,27 @@ import sys
 import time
 from locale import getlocale
 from pathlib import Path
+from typing import Callable, override
 
+from albert import setClipboardText  # pyright: ignore[reportUnknownVariableType]
 from albert import (
     Action,
     PluginInstance,
+    Query,
     StandardItem,
     TriggerQueryHandler,
-    setClipboardText,
 )
+
+setClipboardText: Callable[[str], None]
 
 sys.path.append(str(Path(__file__).parent))  # isort: skip
 
 # pylint: disable=wrong-import-position
-from google_trans_new.constant import LANGUAGES
-from google_trans_new.google_trans_new import google_translator
+from google_trans_new.constant import LANGUAGES  # noqa: E402
+from google_trans_new.google_trans_new import google_translator  # noqa: E402
 
-warning = globals().get('warning', lambda _: None)
+_default_warning: Callable[[str], None] = lambda _: None  # noqa: E731
+warning: Callable[[str], None] = globals().get('warning', _default_warning)  # pyright: ignore[reportAny]
 
 md_iid = '3.0'
 md_version = '1.4'
@@ -53,16 +58,19 @@ class Plugin(PluginInstance, TriggerQueryHandler):
         assert language_code is not None
         self.language = language_code[0:2]
 
+    @override
     def synopsis(self, _query: str) -> str:
         return '[[src] dest] text'
 
+    @override
     def defaultTrigger(self):
         return 'tr '
 
     def get_lang_with_synonym(self, lang: str) -> str:
         return self.synonyms.get(lang, lang)
 
-    def handleTriggerQuery(self, query) -> None:
+    @override
+    def handleTriggerQuery(self, query: Query) -> None:
         query_str = query.string.strip()
         if not query_str:
             return
@@ -86,16 +94,19 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                 lang_tgt, text = self.get_lang_with_synonym(splits[0]), splits[1]
 
         assert self.translator is not None
-        if lang_src:
-            translate_texts = self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)
-        else:
-            translate_texts = self.translator.translate(text, lang_tgt=lang_tgt)
+        translate_texts: str | list[str] = (  # pyright: ignore[reportUnknownVariableType]
+            self.translator.translate(text, lang_src=lang_src, lang_tgt=lang_tgt)  # pyright: ignore[reportUnknownMemberType]
+            if lang_src
+            else self.translator.translate(text, lang_tgt=lang_tgt)  # pyright: ignore[reportUnknownMemberType]
+        )
 
         if isinstance(translate_texts, str):
             translate_texts = [translate_texts]
 
-        for translate_text in translate_texts:
-            query.add(
+        for translate_text in translate_texts:  # pyright: ignore[reportUnknownVariableType]
+            assert isinstance(translate_text, str)
+            copy_call: Callable[[str], None] = lambda value_=translate_text: setClipboardText(value_)  # noqa: E731
+            query.add(  # pyright: ignore[reportUnknownMemberType]
                 StandardItem(
                     id=f'{md_name}/copy',
                     text=translate_text,
@@ -109,7 +120,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                         Action(
                             f'{md_name}/copy',
                             'Copy result to clipboard',
-                            lambda translate_text_=translate_text: setClipboardText(translate_text_),
+                            copy_call,
                         )
                     ],
                 )
