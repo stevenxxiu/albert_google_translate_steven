@@ -8,6 +8,7 @@ from typing import Callable, override
 from albert import setClipboardText  # pyright: ignore[reportUnknownVariableType]
 from albert import (
     Action,
+    Item,
     PluginInstance,
     Query,
     StandardItem,
@@ -103,25 +104,24 @@ class Plugin(PluginInstance, TriggerQueryHandler):
         if isinstance(translate_texts, str):
             translate_texts = [translate_texts]
 
+        items: list[Item] = []
         for translate_text in translate_texts:  # pyright: ignore[reportUnknownVariableType]
             assert isinstance(translate_text, str)
             copy_call: Callable[[str], None] = lambda value_=translate_text: setClipboardText(value_)  # noqa: E731
-            query.add(  # pyright: ignore[reportUnknownMemberType]
-                StandardItem(
-                    id=f'{md_name}/copy',
-                    text=translate_text,
-                    subtext=(
-                        f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}'
-                        if lang_src
-                        else f'To {LANGUAGES[lang_tgt]}'
-                    ),
-                    iconUrls=[ICON_URL],
-                    actions=[
-                        Action(
-                            f'{md_name}/copy',
-                            'Copy result to clipboard',
-                            copy_call,
-                        )
-                    ],
-                )
+            item = StandardItem(
+                id=f'{md_name}/copy',
+                text=translate_text,
+                subtext=(
+                    f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
+                ),
+                iconUrls=[ICON_URL],
+                actions=[
+                    Action(
+                        f'{md_name}/copy',
+                        'Copy result to clipboard',
+                        copy_call,
+                    )
+                ],
             )
+            items.append(item)
+        query.add(items)  # pyright: ignore[reportUnknownMemberType]
