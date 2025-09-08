@@ -109,7 +109,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
             assert isinstance(translate_text, str)
             copy_call: Callable[[str], None] = lambda value_=translate_text: setClipboardText(value_)  # noqa: E731
             item = StandardItem(
-                id=f'{md_name}/copy',
+                id=self.id(),
                 text=translate_text,
                 subtext=(
                     f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
