@@ -13,6 +13,7 @@ from albert import (
     Query,
     StandardItem,
     TriggerQueryHandler,
+    makeImageIcon,
 )
 
 setClipboardText: Callable[[str], None]
@@ -26,7 +27,7 @@ from google_trans_new.google_trans_new import google_translator  # noqa: E402
 _default_warning: Callable[[str], None] = lambda _: None  # noqa: E731
 warning: Callable[[str], None] = globals().get('warning', _default_warning)  # pyright: ignore[reportAny]
 
-md_iid = '3.0'
+md_iid = '4.0'
 md_version = '1.4'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
@@ -34,7 +35,7 @@ md_license = 'MIT'
 md_url = 'https://github.com/stevenxxiu/albert_google_translate_steven'
 md_authors = ['@stevenxxiu']
 
-ICON_URL = f'file:{Path(__file__).parent / "icons/google_translate.png"}'
+ICON_PATH = Path(__file__).parent / 'icons/google_translate.png'
 
 
 class Plugin(PluginInstance, TriggerQueryHandler):
@@ -114,7 +115,7 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                 subtext=(
                     f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
                 ),
-                iconUrls=[ICON_URL],
+                icon_factory=lambda: makeImageIcon(ICON_PATH),
                 actions=[
                     Action(
                         f'{md_name}/copy',
