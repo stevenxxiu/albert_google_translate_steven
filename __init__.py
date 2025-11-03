@@ -106,23 +106,17 @@ class Plugin(PluginInstance, TriggerQueryHandler):
             translate_texts = [translate_texts]
 
         items: list[Item] = []
-        for translate_text in translate_texts:  # pyright: ignore[reportUnknownVariableType]
+        for i, translate_text in enumerate(translate_texts):  # pyright: ignore[reportUnknownArgumentType]
             assert isinstance(translate_text, str)
             copy_call: Callable[[str], None] = lambda value_=translate_text: setClipboardText(value_)  # noqa: E731
             item = StandardItem(
-                id=self.id(),
+                id=str(i),
                 text=translate_text,
                 subtext=(
                     f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
                 ),
                 icon_factory=lambda: makeImageIcon(ICON_PATH),
-                actions=[
-                    Action(
-                        f'{md_name}/copy',
-                        'Copy result to clipboard',
-                        copy_call,
-                    )
-                ],
+                actions=[Action('copy', 'Copy result to clipboard', copy_call)],
             )
             items.append(item)
         query.add(items)  # pyright: ignore[reportUnknownMemberType]
