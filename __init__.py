@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+from collections.abc import Generator
 from locale import getlocale
 from pathlib import Path
 from typing import Callable, override
@@ -8,12 +9,12 @@ from typing import Callable, override
 from albert import setClipboardText  # pyright: ignore[reportUnknownVariableType]
 from albert import (
     Action,
+    GeneratorQueryHandler,
+    Icon,
     Item,
     PluginInstance,
-    Query,
+    QueryContext,
     StandardItem,
-    TriggerQueryHandler,
-    makeImageIcon,
 )
 
 setClipboardText: Callable[[str], None]
@@ -27,8 +28,8 @@ from google_trans_new.google_trans_new import google_translator  # noqa: E402
 _default_warning: Callable[[str], None] = lambda _: None  # noqa: E731
 warning: Callable[[str], None] = globals().get('warning', _default_warning)  # pyright: ignore[reportAny]
 
-md_iid = '4.0'
-md_version = '1.4'
+md_iid = '5.0'
+md_version = '1.5'
 md_name = 'Google Translate Steven'
 md_description = 'Translate sentences using Google Translate'
 md_license = 'MIT'
@@ -38,14 +39,14 @@ md_authors = ['@stevenxxiu']
 ICON_PATH = Path(__file__).parent / 'icons/google_translate.png'
 
 
-class Plugin(PluginInstance, TriggerQueryHandler):
+class Plugin(PluginInstance, GeneratorQueryHandler):
     translator: google_translator | None = None
     language: str | None = None
     synonyms: dict[str, str] = {}
 
     def __init__(self):
         PluginInstance.__init__(self)
-        TriggerQueryHandler.__init__(self)
+        GeneratorQueryHandler.__init__(self)
 
         self.synonyms = LANGUAGES
         with (Path(self.configLocation()) / 'settings.json').open() as sr:
@@ -72,15 +73,15 @@ class Plugin(PluginInstance, TriggerQueryHandler):
         return self.synonyms.get(lang, lang)
 
     @override
-    def handleTriggerQuery(self, query: Query) -> None:
-        query_str = query.string.strip()
+    def items(self, ctx: QueryContext) -> Generator[list[Item]]:
+        query_str = ctx.query.strip()
         if not query_str:
             return
 
         # Avoid rate limiting
         for _ in range(50):
             time.sleep(0.01)
-            if not query.isValid:
+            if not ctx.isValid:
                 return
 
         lang_src = None
@@ -115,8 +116,8 @@ class Plugin(PluginInstance, TriggerQueryHandler):
                 subtext=(
                     f'From {LANGUAGES[lang_src]} to {LANGUAGES[lang_tgt]}' if lang_src else f'To {LANGUAGES[lang_tgt]}'
                 ),
-                icon_factory=lambda: makeImageIcon(ICON_PATH),
+                icon_factory=lambda: Icon.image(ICON_PATH),
                 actions=[Action('copy', 'Copy result to clipboard', copy_call)],
             )
             items.append(item)
-        query.add(items)  # pyright: ignore[reportUnknownMemberType]
+        yield items
