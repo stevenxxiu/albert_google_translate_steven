@@ -56,6 +56,7 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
                     warning(f'Invalid language: {dest}')
                     continue
 
+        self.call_count: int = 0
         self.translator = google_translator()
         language_code = getlocale()[0]
         assert language_code is not None
@@ -78,11 +79,12 @@ class Plugin(PluginInstance, GeneratorQueryHandler):
         if not query_str:
             return
 
-        # Avoid rate limiting
-        for _ in range(50):
-            time.sleep(0.01)
-            if not ctx.isValid:
-                return
+        # Rate limit
+        self.call_count += 1
+        call_count = self.call_count
+        time.sleep(0.2)
+        if self.call_count != call_count:
+            return
 
         lang_src = None
         lang_tgt, text = self.language, query_str
